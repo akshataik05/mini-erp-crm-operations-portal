@@ -12,6 +12,11 @@
       "type": "string"
     },
     {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
       "key": "authToken",
       "value": "",
       "type": "string"
@@ -23,6 +28,23 @@
       "item": [
         {
           "name": "1. Login (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.token) {",
+                  "        pm.environment.set(\"token\", jsonData.data.token);",
+                  "        pm.environment.set(\"authToken\", jsonData.data.token);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -37,11 +59,28 @@
               "host": ["{{baseUrl}}"],
               "path": ["auth", "login"]
             },
-            "description": "Authenticates user and returns JWT Bearer token."
+            "description": "Authenticates Admin credentials and automatically sets {{token}} variable."
           }
         },
         {
           "name": "2. Login (Sales)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.token) {",
+                  "        pm.environment.set(\"token\", jsonData.data.token);",
+                  "        pm.environment.set(\"authToken\", jsonData.data.token);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -59,16 +98,119 @@
           }
         },
         {
-          "name": "3. Get Current User Profile (/me)",
+          "name": "3. Login (Warehouse)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.token) {",
+                  "        pm.environment.set(\"token\", jsonData.data.token);",
+                  "        pm.environment.set(\"authToken\", jsonData.data.token);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"warehouse@minierp.com\",\n  \"password\": \"Warehouse@123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "4. Login (Accounts)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.data && jsonData.data.token) {",
+                  "        pm.environment.set(\"token\", jsonData.data.token);",
+                  "        pm.environment.set(\"authToken\", jsonData.data.token);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"accounts@minierp.com\",\n  \"password\": \"Accounts@123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "5. Get Current User Profile (/me)",
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": {
               "raw": "{{baseUrl}}/auth/me",
               "host": ["{{baseUrl}}"],
               "path": ["auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "6. Admin - List All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"]
+            }
+          }
+        },
+        {
+          "name": "7. Admin - Create New User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New Sales Rep\",\n  \"email\": \"newsales@minierp.com\",\n  \"password\": \"Sales@123\",\n  \"role\": \"SALES\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"]
             }
           }
         }
@@ -83,7 +225,7 @@
             "method": "POST",
             "header": [
               { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "body": {
               "mode": "raw",
@@ -101,7 +243,7 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": {
               "raw": "{{baseUrl}}/customers?page=1&limit=10&search=Apex&status=ACTIVE&customerType=WHOLESALE",
@@ -122,13 +264,13 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": {
               "raw": "{{baseUrl}}/customers/:id",
               "host": ["{{baseUrl}}"],
               "path": ["customers", ":id"],
-              "variable": [{ "key": "id", "value": "customer-uuid-here" }]
+              "variable": [{ "key": "id", "value": "customer-id-here" }]
             }
           }
         },
@@ -138,7 +280,7 @@
             "method": "PUT",
             "header": [
               { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "body": {
               "mode": "raw",
@@ -148,7 +290,22 @@
               "raw": "{{baseUrl}}/customers/:id",
               "host": ["{{baseUrl}}"],
               "path": ["customers", ":id"],
-              "variable": [{ "key": "id", "value": "customer-uuid-here" }]
+              "variable": [{ "key": "id", "value": "customer-id-here" }]
+            }
+          }
+        },
+        {
+          "name": "5. Delete Customer (Admin Only)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers", ":id"],
+              "variable": [{ "key": "id", "value": "customer-id-here" }]
             }
           }
         }
@@ -163,7 +320,7 @@
             "method": "POST",
             "header": [
               { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "body": {
               "mode": "raw",
@@ -181,7 +338,7 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": {
               "raw": "{{baseUrl}}/products?page=1&limit=10&lowStock=true",
@@ -196,16 +353,66 @@
           }
         },
         {
-          "name": "3. Add Stock Movement (IN)",
+          "name": "3. Get Product by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/products/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", ":id"],
+              "variable": [{ "key": "id", "value": "product-id-here" }]
+            }
+          }
+        },
+        {
+          "name": "4. Update Product",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"unitPrice\": 4500.00,\n  \"minimumStock\": 15\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/products/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", ":id"],
+              "variable": [{ "key": "id", "value": "product-id-here" }]
+            }
+          }
+        },
+        {
+          "name": "5. Delete Product (Admin Only)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/products/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", ":id"],
+              "variable": [{ "key": "id", "value": "product-id-here" }]
+            }
+          }
+        },
+        {
+          "name": "6. Add Stock Movement (IN)",
           "request": {
             "method": "POST",
             "header": [
               { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"productId\": \"product-uuid-here\",\n  \"quantity\": 50,\n  \"movementType\": \"IN\",\n  \"reason\": \"Warehouse intake shipment receipt PO-1002\"\n}"
+              "raw": "{\n  \"productId\": \"product-id-here\",\n  \"quantity\": 50,\n  \"movementType\": \"IN\",\n  \"reason\": \"Warehouse intake shipment receipt PO-1002\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/stock-movements",
@@ -215,11 +422,11 @@
           }
         },
         {
-          "name": "4. Get Stock Movements Audit Log",
+          "name": "7. Get Stock Movements Audit Log",
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": {
               "raw": "{{baseUrl}}/stock-movements?movementType=IN",
@@ -240,11 +447,11 @@
             "method": "POST",
             "header": [
               { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"customerId\": \"customer-uuid-here\",\n  \"items\": [\n    {\n      \"productId\": \"product-uuid-here\",\n      \"quantity\": 5\n    }\n  ]\n}"
+              "raw": "{\n  \"customerId\": \"customer-id-here\",\n  \"items\": [\n    {\n      \"productId\": \"product-id-here\",\n      \"quantity\": 20\n    }\n  ]\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/challans",
@@ -254,33 +461,102 @@
           }
         },
         {
-          "name": "2. Confirm Sales Challan (PostgreSQL Transaction)",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{authToken}}" }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/challans/:id/confirm",
-              "host": ["{{baseUrl}}"],
-              "path": ["challans", ":id", "confirm"],
-              "variable": [{ "key": "id", "value": "challan-uuid-here" }]
-            },
-            "description": "Executes PostgreSQL transaction: checks stock for all line items, decrements product stock, logs OUT stock movements, and marks challan CONFIRMED. Returns HTTP 400 if stock is insufficient."
-          }
-        },
-        {
-          "name": "3. Get All Challans",
+          "name": "2. Get All Challans (Filtered)",
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "url": {
               "raw": "{{baseUrl}}/challans?status=DRAFT",
               "host": ["{{baseUrl}}"],
               "path": ["challans"],
               "query": [{ "key": "status", "value": "DRAFT" }]
+            }
+          }
+        },
+        {
+          "name": "3. Get Challan Details by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/challans/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["challans", ":id"],
+              "variable": [{ "key": "id", "value": "challan-id-here" }]
+            }
+          }
+        },
+        {
+          "name": "4. Update DRAFT Challan Items",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"productId\": \"product-id-here\",\n      \"quantity\": 20\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/challans/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["challans", ":id"],
+              "variable": [{ "key": "id", "value": "challan-id-here" }]
+            }
+          }
+        },
+        {
+          "name": "5. Confirm Sales Challan (PostgreSQL Transaction)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/challans/:id/confirm",
+              "host": ["{{baseUrl}}"],
+              "path": ["challans", ":id", "confirm"],
+              "variable": [{ "key": "id", "value": "challan-id-here" }]
+            },
+            "description": "Executes transaction: checks stock for line items, decrements product stock, logs OUT stock movements, and marks status CONFIRMED."
+          }
+        },
+        {
+          "name": "6. Cancel DRAFT Sales Challan",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/challans/:id/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["challans", ":id", "cancel"],
+              "variable": [{ "key": "id", "value": "challan-id-here" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Module 5 - Executive Dashboard",
+      "item": [
+        {
+          "name": "1. Get Dashboard Key Stats & Recent Movements",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["dashboard", "stats"]
             }
           }
         }
