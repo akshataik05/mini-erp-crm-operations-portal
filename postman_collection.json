@@ -1,0 +1,290 @@
+{
+  "info": {
+    "_postman_id": "b8a90123-4567-89ab-cdef-0123456789ab",
+    "name": "Mini ERP + CRM Operations Portal API",
+    "description": "Complete REST API Collection for Mini ERP + CRM Operations Portal with RBAC, Customer CRM, Inventory Stock Tracking, and Transaction-Safe Sales Challans.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Module 1 - Authentication & RBAC",
+      "item": [
+        {
+          "name": "1. Login (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@minierp.com\",\n  \"password\": \"Admin@123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Authenticates user and returns JWT Bearer token."
+          }
+        },
+        {
+          "name": "2. Login (Sales)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"sales@minierp.com\",\n  \"password\": \"Sales@123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "3. Get Current User Profile (/me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Module 2 - Customer CRM",
+      "item": [
+        {
+          "name": "1. Create Customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Apex Industrial Corp\",\n  \"mobile\": \"+919876500000\",\n  \"email\": \"contact@apexindustrial.com\",\n  \"businessName\": \"Apex Industrial Solutions Pvt Ltd\",\n  \"gstNumber\": \"27AAAAA9999A1Z5\",\n  \"customerType\": \"WHOLESALE\",\n  \"address\": \"Plot 15, Industrial Estate, Pune, MH\",\n  \"status\": \"ACTIVE\",\n  \"followUpDate\": \"2026-08-25\",\n  \"notes\": \"Key customer interested in heavy machinery components.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customers",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers"]
+            }
+          }
+        },
+        {
+          "name": "2. Get Customers (Paginated, Search, Filter)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers?page=1&limit=10&search=Apex&status=ACTIVE&customerType=WHOLESALE",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "search", "value": "Apex" },
+                { "key": "status", "value": "ACTIVE" },
+                { "key": "customerType", "value": "WHOLESALE" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "3. Get Customer by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/customers/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers", ":id"],
+              "variable": [{ "key": "id", "value": "customer-uuid-here" }]
+            }
+          }
+        },
+        {
+          "name": "4. Update Customer CRM Record",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ACTIVE\",\n  \"notes\": \"Updated follow-up note: Quotation approved.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/customers/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["customers", ":id"],
+              "variable": [{ "key": "id", "value": "customer-uuid-here" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Module 3 - Products & Inventory",
+      "item": [
+        {
+          "name": "1. Create Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Industrial Control Valve V-300\",\n  \"sku\": \"SKU-VLV-300\",\n  \"category\": \"Valves\",\n  \"unitPrice\": 4200.00,\n  \"currentStock\": 0,\n  \"minimumStock\": 10,\n  \"warehouseLocation\": \"Bay C - Rack 5\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"]
+            }
+          }
+        },
+        {
+          "name": "2. Get Products (Search & Low-Stock Filter)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/products?page=1&limit=10&lowStock=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "lowStock", "value": "true" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "3. Add Stock Movement (IN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"product-uuid-here\",\n  \"quantity\": 50,\n  \"movementType\": \"IN\",\n  \"reason\": \"Warehouse intake shipment receipt PO-1002\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/stock-movements",
+              "host": ["{{baseUrl}}"],
+              "path": ["stock-movements"]
+            }
+          }
+        },
+        {
+          "name": "4. Get Stock Movements Audit Log",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/stock-movements?movementType=IN",
+              "host": ["{{baseUrl}}"],
+              "path": ["stock-movements"],
+              "query": [{ "key": "movementType", "value": "IN" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Module 4 - Sales Challans & Transactions",
+      "item": [
+        {
+          "name": "1. Create DRAFT Sales Challan",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerId\": \"customer-uuid-here\",\n  \"items\": [\n    {\n      \"productId\": \"product-uuid-here\",\n      \"quantity\": 5\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/challans",
+              "host": ["{{baseUrl}}"],
+              "path": ["challans"]
+            }
+          }
+        },
+        {
+          "name": "2. Confirm Sales Challan (PostgreSQL Transaction)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/challans/:id/confirm",
+              "host": ["{{baseUrl}}"],
+              "path": ["challans", ":id", "confirm"],
+              "variable": [{ "key": "id", "value": "challan-uuid-here" }]
+            },
+            "description": "Executes PostgreSQL transaction: checks stock for all line items, decrements product stock, logs OUT stock movements, and marks challan CONFIRMED. Returns HTTP 400 if stock is insufficient."
+          }
+        },
+        {
+          "name": "3. Get All Challans",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{authToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/challans?status=DRAFT",
+              "host": ["{{baseUrl}}"],
+              "path": ["challans"],
+              "query": [{ "key": "status", "value": "DRAFT" }]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id             String          @id @default(uuid())
+  name           String
+  email          String          @unique
+  password       String
+  role           String          @default("SALES") // ADMIN, SALES, WAREHOUSE, ACCOUNTS
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  stockMovements StockMovement[]
+  challans       Challan[]
+
+  @@map("users")
+}
+
+model Customer {
+  id           String    @id @default(uuid())
+  name         String
+  mobile       String
+  email        String
+  businessName String
+  gstNumber    String?
+  customerType String    @default("RETAIL") // RETAIL, WHOLESALE, DISTRIBUTOR
+  address      String
+  status       String    @default("LEAD") // LEAD, ACTIVE, INACTIVE
+  followUpDate DateTime?
+  notes        String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  challans     Challan[]
+
+  @@index([mobile])
+  @@index([name])
+  @@map("customers")
+}
+
+model Product {
+  id                String          @id @default(uuid())
+  name              String
+  sku               String          @unique
+  category          String
+  unitPrice         Float
+  currentStock      Int             @default(0)
+  minimumStock      Int             @default(0)
+  warehouseLocation String
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  stockMovements    StockMovement[]
+  challanItems      ChallanItem[]
+
+  @@index([sku])
+  @@index([name])
+  @@map("products")
+}
+
+model StockMovement {
+  id           String   @id @default(uuid())
+  productId    String
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity     Int
+  movementType String   // IN, OUT
+  reason       String
+  createdBy    String
+  user         User     @relation(fields: [createdBy], references: [id])
+  createdAt    DateTime @default(now())
+
+  @@map("stock_movements")
+}
+
+model Challan {
+  id            String        @id @default(uuid())
+  challanNumber String        @unique
+  customerId    String
+  customer      Customer      @relation(fields: [customerId], references: [id])
+  totalQuantity Int
+  totalAmount   Float         @default(0.0)
+  status        String        @default("DRAFT") // DRAFT, CONFIRMED, CANCELLED
+  createdBy     String
+  user          User          @relation(fields: [createdBy], references: [id])
+  items         ChallanItem[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([challanNumber])
+  @@index([status])
+  @@map("challans")
+}
+
+model ChallanItem {
+  id                  String  @id @default(uuid())
+  challanId           String
+  challan             Challan @relation(fields: [challanId], references: [id], onDelete: Cascade)
+  productId           String
+  product             Product @relation(fields: [productId], references: [id])
+  productNameSnapshot String
+  skuSnapshot         String
+  unitPriceSnapshot    Float
+  quantity            Int
+
+  @@map("challan_items")
+}
