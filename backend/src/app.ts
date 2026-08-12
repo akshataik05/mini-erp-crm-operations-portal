@@ -9,14 +9,39 @@ dotenv.config();
 
 const app: Express = express();
 
-// Middlewares
-app.use(cors({ origin: true, credentials: true }));
+// CORS configuration supporting dynamic FRONTEND_URL & localhost
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  process.env.FRONTEND_URL
+].filter(Boolean) as string[];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+        callback(null, true);
+      } else {
+        callback(null, true);
+      }
+    },
+    credentials: true
+  })
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Health Check
+// Health Check Endpoints
 app.get('/health', (req, res) => {
   return sendSuccess(res, { status: 'healthy', timestamp: new Date() }, 'Mini ERP + CRM Operations Portal API is running');
+});
+
+app.get('/api/health', (req, res) => {
+  return res.status(200).json({
+    success: true,
+    message: 'API is healthy'
+  });
 });
 
 // API Routes
