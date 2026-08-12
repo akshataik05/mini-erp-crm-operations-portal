@@ -1,7 +1,6 @@
 import axios from 'axios';
-import { ApiResponse } from '../types';
 
-const API_BASE = '/api';
+const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
 
 const api = axios.create({
   baseURL: API_BASE,
@@ -11,15 +10,18 @@ const api = axios.create({
 });
 
 // Request interceptor to append JWT Token
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('erp_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('erp_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
-  return config;
-}, (error) => {
-  return Promise.reject(error);
-});
+);
 
 // Response interceptor for error unwrapping
 api.interceptors.response.use(
