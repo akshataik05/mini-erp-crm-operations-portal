@@ -32,7 +32,15 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Health Check Endpoints
+// Root Welcome & Health Check Endpoints
+app.get('/', (req, res) => {
+  return res.status(200).json({
+    success: true,
+    message: 'Mini ERP + CRM Operations Portal API Server',
+    health: '/api/health'
+  });
+});
+
 app.get('/health', (req, res) => {
   return sendSuccess(res, { status: 'healthy', timestamp: new Date() }, 'Mini ERP + CRM Operations Portal API is running');
 });
